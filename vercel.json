@@ -1,0 +1,6 @@
+# Vercel deployment for the TikTok downloader (free Hobby tier)
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": ["sin1"]
+}
