@@ -2,37 +2,58 @@ import type { Metadata } from 'next';
 import { getSiteConfig } from '@/lib/config';
 import './globals.css';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tiktok-downloader.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tiktok-downloader-hazel-eight.vercel.app';
+
+const SEO_DESCRIPTION =
+  'Download TikTok videos in HD without watermark, save audio as MP3, and download photo slideshows as images or a ZIP — free, fast, no account or app needed.';
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   const title = `${config.siteName} — Download TikTok Videos & Slides Without Watermark`;
-  const description =
-    config.tagline ||
-    'Free TikTok downloader: save videos in HD without watermark, download audio as MP3, and save photo slideshows as images or a ZIP. No account, no app to install.';
+  const description = SEO_DESCRIPTION;
+  const ogImage = `${SITE_URL}/og-image.png`;
   return {
     metadataBase: new URL(SITE_URL),
     title,
     description,
-    keywords: ['tiktok downloader', 'download tiktok video', 'tiktok no watermark', 'tiktok mp3', 'tiktok slides download', 'tiktok photo downloader'],
+    keywords: ['tiktok downloader', 'download tiktok video', 'tiktok no watermark', 'tiktok mp3', 'tiktok slides download', 'tiktok photo downloader', 'save tiktok video', 'tiktok video downloader hd'],
     authors: [{ name: config.siteName }],
+    alternates: { canonical: '/' },
     openGraph: {
       type: 'website',
+      url: SITE_URL,
       title,
       description,
       siteName: config.siteName,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: `${config.siteName} — Download TikTok videos & slides without watermark, free` }],
     },
-    twitter: { card: 'summary_large_image', title, description },
+    twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
     robots: { index: true, follow: true },
   };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const config = await getSiteConfig();
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: config.siteName,
+    url: SITE_URL,
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Any',
+    description: SEO_DESCRIPTION,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    featureList: [
+      'Download TikTok videos without watermark',
+      'Download TikTok audio as MP3',
+      'Download TikTok photo slideshows as images or ZIP',
+    ],
+  };
   return (
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {config.adsEnabled && config.adsenseClient ? (
           <script
             async
