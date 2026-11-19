@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isTikTokUrl, resolveTikTok, ResolveError, friendlyErrorMessage } from '@/lib/tiktok';
 import { getBlockedList } from '@/lib/config';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,16 @@ export const maxDuration = 25;
  */
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url')?.trim() ?? '';
+
+  // 30 resolves per minute per IP — keeps the free function budget safe
+  // from casual abuse without bothering normal users.
+  const limit = checkRateLimit(`tiktok:${clientIp(req.headers)}`, 30, 60_000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, code: 'RATE_LIMITED', error: 'Too many requests — please wait a moment and try again.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    );
+  }
 
   if (!url) {
     return NextResponse.json(
