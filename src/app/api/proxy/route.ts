@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,15 @@ function safeFilename(raw: string | null, fallback: string): string {
 export async function GET(req: NextRequest) {
   const remote = req.nextUrl.searchParams.get('url') ?? '';
   const filename = safeFilename(req.nextUrl.searchParams.get('filename'), 'tiktok-download');
+
+  // 60 downloads per minute per IP.
+  const limit = checkRateLimit(`proxy:${clientIp(req.headers)}`, 60, 60_000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests — please wait a moment and try again.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+    );
+  }
 
   let parsed: URL;
   try {
