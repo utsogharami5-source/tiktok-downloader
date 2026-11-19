@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://tiktok-downloader.vercel.app/sitemap.xml
+Sitemap: https://tiktok-downloader-hazel-eight.vercel.app/sitemap.xml
